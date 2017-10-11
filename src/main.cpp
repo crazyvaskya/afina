@@ -4,7 +4,7 @@
 #include <uv.h>
 
 #include <cxxopts.hpp>
-
+#include <unistd.h>
 #include <afina/Storage.h>
 #include <afina/Version.h>
 #include <afina/network/Server.h>
@@ -49,6 +49,8 @@ int main(int argc, char **argv) {
         options.add_options()("s,storage", "Type of storage service to use", cxxopts::value<std::string>());
         options.add_options()("n,network", "Type of network service to use", cxxopts::value<std::string>());
         options.add_options()("h,help", "Print usage info");
+        options.add_options()("d", "Run program as a daemon");
+        options.add_options()("p", "Dump pid", cxxopts::value<std::string>());
         options.parse(argc, argv);
 
         if (options.count("help") > 0) {
@@ -59,6 +61,40 @@ int main(int argc, char **argv) {
         std::cerr << "Error: " << ex.what() << std::endl;
         return 1;
     }
+    if (options.count ("d") > 0)
+      {
+        size_t pid = fork();
+
+        if (pid == -1)
+          {
+            printf("Error: Start Daemon failed (%s)\n", strerror(errno));
+
+            return -1;
+          }
+        else if (pid == 0)
+          {
+            setsid();
+
+            fclose(stdin);
+            fclose(stdout);
+            fclose(stderr);
+          }
+        else // pid != 0
+          {
+            if (options.count ("p") > 0)
+              {
+                FILE *fp = fopen (options["p"].as<std::string>().c_str(), "w");
+                if (!fp)
+                  {
+                    printf ("Error: cannot create pid file\n");
+                    return -2;
+                  }
+                fprintf (fp, "%lu", pid);
+                fclose (fp);
+              }
+            return 0;
+          }
+      }
 
     // Start boot sequence
     Application app;
