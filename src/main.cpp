@@ -81,19 +81,20 @@ int main(int argc, char **argv) {
           }
         else // pid != 0
           {
-            if (options.count ("p") > 0)
-              {
-                FILE *fp = fopen (options["p"].as<std::string>().c_str(), "w");
-                if (!fp)
-                  {
-                    printf ("Error: cannot create pid file\n");
-                    return -2;
-                  }
-                fprintf (fp, "%lu", pid);
-                fclose (fp);
-              }
             return 0;
           }
+      }
+    if (options.count ("p") > 0)
+      {
+        size_t pid = getpid ();
+        FILE *fp = fopen (options["p"].as<std::string>().c_str(), "w");
+        if (!fp)
+          {
+            printf ("Error: cannot create pid file\n");
+            return -2;
+          }
+        fprintf (fp, "%lu", pid);
+        fclose (fp);
       }
 
     // Start boot sequence
