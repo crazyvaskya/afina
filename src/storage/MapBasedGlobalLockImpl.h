@@ -42,7 +42,7 @@ private:
     size_t _max_size;
 
     std::map<std::string, std::string> _backend;
-    std::list<std::map<std::string, std::string>::iterator> elements_order;
+    std::list<std::string> elements_order;
 };
 
 } // namespace Backend
